@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consignment Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    label, input, select, button {
+      display: block;
+      margin-bottom: 10px;
+    }
+    .output {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      background: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <h1>Consignment Calculator</h1>
+  <form id="calculator">
+    <label for="typeOfSale">Type of Sale</label>
+    <select id="typeOfSale">
+      <option value="typical">Typical Consignment</option>
+      <option value="loan">New Loan Model Consignment</option>
+      <option value="auction">Auction</option>
+    </select>
+
+    <label for="commissionFee">Commission Fee (%)</label>
+    <input type="number" id="commissionFee" placeholder="Enter percentage (e.g., 10)" required>
+
+    <label for="salePrice">Sale Price (£)</label>
+    <input type="number" id="salePrice" placeholder="Enter sale price" required>
+
+    <label for="timeTaken">Time Taken to Sell (months)</label>
+    <input type="number" id="timeTaken" placeholder="Enter months" required>
+
+    <label for="interestRate">Finance Interest Rate (%)</label>
+    <input type="number" id="interestRate" placeholder="Enter percentage (e.g., 10)" required>
+
+    <button type="button" onclick="calculate()">Calculate</button>
+  </form>
+
+  <div class="output" id="output"></div>
+
+  <script>
+    function calculate() {
+      const typeOfSale = document.getElementById("typeOfSale").value;
+      const commissionFee = parseFloat(document.getElementById("commissionFee").value) / 100;
+      const salePrice = parseFloat(document.getElementById("salePrice").value);
+      const timeTaken = parseFloat(document.getElementById("timeTaken").value);
+      const interestRate = parseFloat(document.getElementById("interestRate").value) / 100;
+
+      let upfrontPayment = salePrice * 0.5 - (salePrice * 0.5 * commissionFee);
+      let financeCost = salePrice * 0.5 * interestRate * (timeTaken / 12);
+      let netReturn, commissionEarned;
+
+      if (typeOfSale === "typical") {
+        commissionEarned = salePrice * commissionFee;
+        netReturn = salePrice - commissionEarned;
+      } else if (typeOfSale === "loan") {
+        commissionEarned = salePrice * commissionFee;
+        netReturn = upfrontPayment + (salePrice - financeCost - commissionEarned);
+      } else if (typeOfSale === "auction") {
+        commissionEarned = salePrice * commissionFee;
+        netReturn = salePrice - financeCost - commissionEarned;
+      }
+
+      document.getElementById("output").innerHTML = `
+        <p>Type of Sale: ${typeOfSale.charAt(0).toUpperCase() + typeOfSale.slice(1)}</p>
+        <p>Upfront Payment: £${upfrontPayment.toFixed(2)}</p>
+        <p>Finance Cost: £${financeCost.toFixed(2)}</p>
+        <p>Commission Earned by Hangar 136: £${commissionEarned.toFixed(2)}</p>
+        <p>Net Return to the Seller: £${netReturn.toFixed(2)}</p>
+      `;
+    }
+  </script>
+</body>
+</html>
