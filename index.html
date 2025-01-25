@@ -134,22 +134,24 @@
         const secondPayment = salePrice - remainingCommission - loanAmount - financeCost;
         const fullNetReturn = upfrontPayment + secondPayment;
 
-        // Output the results
+        // Output the results (reformatted)
         outputText = `
-          <p>Sale Type: Financed Consignment</p>
-          <p>At an Agreed Market Value of £${agreedValue.toLocaleString(undefined, { minimumFractionDigits: 2 })} and a Commission Fee of ${(commissionRate * 100).toFixed(1)}%+VAT, Hangar 136's projected total commission will be £${projectedCommission.toLocaleString(undefined, { minimumFractionDigits: 2 })}.</p>
-          <p>The Seller's upfront payment will equal 50% of the Agreed Market Value less half of the projected total commission owed to Hangar 136. In this case, the Seller will receive £${(agreedValue * 0.5).toLocaleString(undefined, { minimumFractionDigits: 2 })} - £${upfrontCommission.toLocaleString(undefined, { minimumFractionDigits: 2 })} = £${upfrontPayment.toLocaleString(undefined, { minimumFractionDigits: 2 })} Upfront.</p>
-          <p>If the car were to take ${timeToSell} months to sell, the cost of the finance would be £${financeCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}.</p>
-          <p>Accounting Breakdown:</p>
-          <div class="accounting">
-            Sale Price: £${salePrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-            - Remaining Hangar 136 Commission: £${remainingCommission.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-            - Initial Loan Amount: £${loanAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-            - Cost of Finance: £${financeCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-            ------------------------------------
-            Second Payment: £${secondPayment.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-          </div>
-          <p>The Seller already received an upfront payment of £${upfrontPayment.toLocaleString(undefined, { minimumFractionDigits: 2 })}, and so the total net return to the Seller will be £${fullNetReturn.toLocaleString(undefined, { minimumFractionDigits: 2 })}.</p>
+          <p><strong>Sale Type:</strong> Financed Consignment</p>
+          <p><strong>Agreed Market Value:</strong> £${agreedValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+          <p><strong>Commission Fee:</strong> ${(commissionRate * 100).toFixed(1)}% + VAT</p>
+          <p><strong>H136 Projected Commission:</strong> £${projectedCommission.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+          <p><strong>Seller's Upfront Payment = 50% of Agreed Market Value – 50% H136 Projected Commission</strong></p>
+          <p>= £${(agreedValue * 0.5).toLocaleString(undefined, { minimumFractionDigits: 2 })} – £${upfrontCommission.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+          <p>= <strong>£${upfrontPayment.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong></p>
+          <p><strong>Time to sell car:</strong> ${timeToSell} months</p>
+          <p><strong>Cost of Finance:</strong> £${financeCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+          <hr>
+          <p><strong>Sale Price:</strong> £${salePrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+          <p><strong>Actual H136 Commission:</strong> £${finalCommission.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+          <p><strong>Remaining H136 Commission Owed:</strong> £${remainingCommission.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+          <p><strong>Seller Second Payment Amount:</strong> £${secondPayment.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+          <hr>
+          <p><strong>TOTAL NET RETURN (to Seller):</strong> £${fullNetReturn.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
         `;
       }
 
