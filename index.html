@@ -34,17 +34,17 @@
       <option value="auction">Auction</option>
     </select>
 
-    <!-- Fields for all scenarios -->
-    <div id="commonFields">
-      <label for="salePrice">Sale Price (£)</label>
-      <input type="number" id="salePrice" placeholder="Enter sale price">
-    </div>
-
     <!-- Fields for Financed Consignment -->
     <div id="financedFields" class="hidden">
       <label for="agreedValue">Agreed Market Value (£)</label>
       <input type="number" id="agreedValue" placeholder="Enter agreed market value">
-      
+
+      <label for="salePrice">Sale Price (£)</label>
+      <input type="number" id="salePrice" placeholder="Enter sale price">
+
+      <label for="commissionRate">Commission % (Excluding VAT)</label>
+      <input type="number" id="commissionRate" placeholder="Enter commission percentage">
+
       <label for="timeToSell">Length of Time to Sell (months)</label>
       <input type="number" id="timeToSell" placeholder="Enter time in months">
 
@@ -58,10 +58,6 @@
       <input type="number" id="hammerPrice" placeholder="Enter hammer price">
     </div>
 
-    <!-- Commission Field for all scenarios -->
-    <label for="commissionRate">Commission % (Excluding VAT)</label>
-    <input type="number" id="commissionRate" placeholder="Enter commission percentage">
-
     <button type="button" onclick="calculate()">Calculate</button>
   </form>
 
@@ -71,58 +67,63 @@
     function updateFormFields() {
       const saleType = document.getElementById("saleType").value;
 
-      // Hide all fields initially
-      document.getElementById("salePrice").classList.add("hidden");
-      document.getElementById("financedFields").classList.add("hidden");
-      document.getElementById("auctionFields").classList.add("hidden");
+      // Get all field sections
+      const financedFields = document.getElementById("financedFields");
+      const auctionFields = document.getElementById("auctionFields");
 
-      // Show relevant fields based on sale type
-      if (saleType === "typical") {
-        document.getElementById("salePrice").classList.remove("hidden");
-      } else if (saleType === "financed") {
-        document.getElementById("salePrice").classList.remove("hidden");
-        document.getElementById("financedFields").classList.remove("hidden");
+      // Reset visibility
+      financedFields.classList.add("hidden");
+      auctionFields.classList.add("hidden");
+
+      // Show relevant fields
+      if (saleType === "financed") {
+        financedFields.classList.remove("hidden");
       } else if (saleType === "auction") {
-        document.getElementById("auctionFields").classList.remove("hidden");
+        auctionFields.classList.remove("hidden");
       }
     }
 
     function calculate() {
       const saleType = document.getElementById("saleType").value;
-      const commissionRate = parseFloat(document.getElementById("commissionRate").value) / 100;
       const VAT_RATE = 0.2; // 20% VAT in the UK
 
-      let salePrice = parseFloat(document.getElementById("salePrice")?.value) || 0;
-      let agreedValue = parseFloat(document.getElementById("agreedValue")?.value) || 0;
-      let hammerPrice = parseFloat(document.getElementById("hammerPrice")?.value) || 0;
-      let timeToSell = parseFloat(document.getElementById("timeToSell")?.value) || 0;
-      let financeRate = parseFloat(document.getElementById("financeRate")?.value) / 100 || 0;
+      let outputText = "";
 
-      let upfrontPayment = 0;
-      let financeCost = 0;
-      let netReturn = 0;
-      let commissionEarned = 0;
+      if (saleType === "financed") {
+        // Get input values
+        const agreedValue = parseFloat(document.getElementById("agreedValue").value) || 0;
+        const salePrice = parseFloat(document.getElementById("salePrice").value) || 0;
+        const commissionRate = parseFloat(document.getElementById("commissionRate").value) / 100 || 0;
+        const timeToSell = parseFloat(document.getElementById("timeToSell").value) || 0;
+        const financeRate = parseFloat(document.getElementById("financeRate").value) / 100 || 0;
 
-      if (saleType === "typical") {
-        commissionEarned = salePrice * commissionRate * (1 + VAT_RATE); // Commission including VAT
-        netReturn = salePrice - commissionEarned;
-      } else if (saleType === "financed") {
-        upfrontPayment = agreedValue * 0.5 - (agreedValue * 0.5 * commissionRate * (1 + VAT_RATE));
-        financeCost = agreedValue * 0.5 * financeRate * (timeToSell / 12);
-        commissionEarned = salePrice * commissionRate * (1 + VAT_RATE); // Commission including VAT
-        netReturn = upfrontPayment + (salePrice - financeCost - commissionEarned);
-      } else if (saleType === "auction") {
-        commissionEarned = hammerPrice * commissionRate * (1 + VAT_RATE); // Commission including VAT
-        netReturn = hammerPrice - commissionEarned;
+        // Calculate values
+        const totalCommission = salePrice * commissionRate * (1 + VAT_RATE); // Including VAT
+        const upfrontPayment = (agreedValue * 0.5) - (totalCommission * 0.5);
+        const loanAmount = agreedValue * 0.5;
+        const financeCost = loanAmount * financeRate * (timeToSell / 12);
+        const netReturn = salePrice - totalCommission - loanAmount - financeCost;
+        const secondPayment = netReturn - upfrontPayment;
+
+        // Output format
+        outputText = `
+          <p>Sale Type: Financed Consignment</p>
+          <p>At an Agreed Market Value of £${agreedValue.toFixed(2)} and a Commission Fee of ${(commissionRate * 100).toFixed(1)}%+VAT, Hangar 136's projected total commission will be £${totalCommission.toFixed(2)}.</p>
+          <p>The Seller's upfront payment will equal 50% of the Agreed Market Value less half of the projected total commission owed to Hangar 136. In this case, the Seller will receive £${(agreedValue * 0.5).toFixed(2)} - £${(totalCommission * 0.5).toFixed(2)} = £${upfrontPayment.toFixed(2)} Upfront.</p>
+          <p>If the car were to take ${timeToSell} months to sell, the cost of the finance would be £${financeCost.toFixed(2)}.</p>
+          <p>Therefore, at a final Sale Price of £${salePrice.toFixed(2)}, the Net Return to the Seller will be:</p>
+          <ul>
+            <li>Sale Price: £${salePrice.toFixed(2)}</li>
+            <li>Hangar 136 Commission: £${totalCommission.toFixed(2)}</li>
+            <li>Initial Loan Amount: £${loanAmount.toFixed(2)}</li>
+            <li>Cost of Finance: £${financeCost.toFixed(2)}</li>
+            <li><strong>Net Return: £${netReturn.toFixed(2)}</strong></li>
+          </ul>
+          <p>The Seller already received an upfront payment of £${upfrontPayment.toFixed(2)}, and so upon successful sale they will receive a second payment of £${secondPayment.toFixed(2)} to bring their total net return to £${netReturn.toFixed(2)}.</p>
+        `;
       }
 
-      document.getElementById("output").innerHTML = `
-        <p>Sale Type: ${saleType.charAt(0).toUpperCase() + saleType.slice(1)}</p>
-        ${upfrontPayment > 0 ? `<p>Upfront Payment: £${upfrontPayment.toFixed(2)}</p>` : ""}
-        ${financeCost > 0 ? `<p>Finance Cost: £${financeCost.toFixed(2)}</p>` : ""}
-        <p>Commission Earned by Hangar 136 (Including VAT): £${commissionEarned.toFixed(2)}</p>
-        <p>Net Return to the Seller: £${netReturn.toFixed(2)}</p>
-      `;
+      document.getElementById("output").innerHTML = outputText;
     }
   </script>
 </body>
