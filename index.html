@@ -113,18 +113,31 @@
         const timeToSell = parseFloat(document.getElementById("timeToSell").value) || 0;
         const financeRate = parseFloat(document.getElementById("financeRate").value) / 100 || 0;
 
-        const totalCommission = salePrice * commissionRate * (1 + VAT_RATE); // Including VAT
-        const upfrontCommission = totalCommission * 0.5; // Half withheld upfront
-        const remainingCommission = totalCommission - upfrontCommission; // Remaining owed commission
+        // Calculate projected commission (based on Agreed Market Value)
+        const projectedCommission = agreedValue * commissionRate * (1 + VAT_RATE);
+        const upfrontCommission = projectedCommission * 0.5;
+
+        // Calculate final commission (based on Sale Price)
+        const finalCommission = salePrice * commissionRate * (1 + VAT_RATE);
+
+        // Remaining commission owed at the time of sale
+        const remainingCommission = finalCommission - upfrontCommission;
+
+        // Upfront Payment
         const upfrontPayment = (agreedValue * 0.5) - upfrontCommission;
+
+        // Finance costs
         const loanAmount = agreedValue * 0.5;
         const financeCost = loanAmount * financeRate * (timeToSell / 12);
+
+        // Second Payment and Full Net Return
         const secondPayment = salePrice - remainingCommission - loanAmount - financeCost;
         const fullNetReturn = upfrontPayment + secondPayment;
 
+        // Output the results
         outputText = `
           <p>Sale Type: Financed Consignment</p>
-          <p>At an Agreed Market Value of £${agreedValue.toLocaleString(undefined, { minimumFractionDigits: 2 })} and a Commission Fee of ${(commissionRate * 100).toFixed(1)}%+VAT, Hangar 136's projected total commission will be £${totalCommission.toLocaleString(undefined, { minimumFractionDigits: 2 })}.</p>
+          <p>At an Agreed Market Value of £${agreedValue.toLocaleString(undefined, { minimumFractionDigits: 2 })} and a Commission Fee of ${(commissionRate * 100).toFixed(1)}%+VAT, Hangar 136's projected total commission will be £${projectedCommission.toLocaleString(undefined, { minimumFractionDigits: 2 })}.</p>
           <p>The Seller's upfront payment will equal 50% of the Agreed Market Value less half of the projected total commission owed to Hangar 136. In this case, the Seller will receive £${(agreedValue * 0.5).toLocaleString(undefined, { minimumFractionDigits: 2 })} - £${upfrontCommission.toLocaleString(undefined, { minimumFractionDigits: 2 })} = £${upfrontPayment.toLocaleString(undefined, { minimumFractionDigits: 2 })} Upfront.</p>
           <p>If the car were to take ${timeToSell} months to sell, the cost of the finance would be £${financeCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}.</p>
           <p>Accounting Breakdown:</p>
