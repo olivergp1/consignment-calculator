@@ -13,6 +13,9 @@
       display: block;
       margin-bottom: 10px;
     }
+    .hidden {
+      display: none;
+    }
     .output {
       margin-top: 20px;
       padding: 10px;
@@ -24,24 +27,40 @@
 <body>
   <h1>Consignment Calculator</h1>
   <form id="calculator">
-    <label for="typeOfSale">Type of Sale</label>
-    <select id="typeOfSale">
+    <label for="saleType">Sale Type</label>
+    <select id="saleType" onchange="updateFormFields()">
       <option value="typical">Typical Consignment</option>
-      <option value="loan">New Loan Model Consignment</option>
+      <option value="financed">Financed Consignment</option>
       <option value="auction">Auction</option>
     </select>
 
-    <label for="commissionFee">Commission Fee (%)</label>
-    <input type="number" id="commissionFee" placeholder="Enter percentage (e.g., 10)" required>
+    <!-- Fields for all scenarios -->
+    <div id="commonFields">
+      <label for="salePrice" class="hidden">Sale Price (£)</label>
+      <input type="number" id="salePrice" class="hidden" placeholder="Enter sale price">
+    </div>
 
-    <label for="salePrice">Sale Price (£)</label>
-    <input type="number" id="salePrice" placeholder="Enter sale price" required>
+    <!-- Fields for Financed Consignment -->
+    <div id="financedFields" class="hidden">
+      <label for="agreedValue">Agreed Market Value (£)</label>
+      <input type="number" id="agreedValue" placeholder="Enter agreed market value">
+      
+      <label for="timeToSell">Length of Time to Sell (months)</label>
+      <input type="number" id="timeToSell" placeholder="Enter time in months">
 
-    <label for="timeTaken">Time Taken to Sell (months)</label>
-    <input type="number" id="timeTaken" placeholder="Enter months" required>
+      <label for="financeRate">Finance Interest Rate (%)</label>
+      <input type="number" id="financeRate" placeholder="Enter finance rate (e.g., 10)">
+    </div>
 
-    <label for="interestRate">Finance Interest Rate (%)</label>
-    <input type="number" id="interestRate" placeholder="Enter percentage (e.g., 10)" required>
+    <!-- Fields for Auction -->
+    <div id="auctionFields" class="hidden">
+      <label for="hammerPrice">Hammer Price (£)</label>
+      <input type="number" id="hammerPrice" placeholder="Enter hammer price">
+    </div>
+
+    <!-- Commission Field for all scenarios -->
+    <label for="commissionRate">Commission % (Excluding VAT)</label>
+    <input type="number" id="commissionRate" placeholder="Enter commission percentage">
 
     <button type="button" onclick="calculate()">Calculate</button>
   </form>
@@ -49,33 +68,62 @@
   <div class="output" id="output"></div>
 
   <script>
+    function updateFormFields() {
+      const saleType = document.getElementById("saleType").value;
+
+      // Hide all fields initially
+      document.getElementById("commonFields").classList.add("hidden");
+      document.getElementById("salePrice").classList.add("hidden");
+      document.getElementById("financedFields").classList.add("hidden");
+      document.getElementById("auctionFields").classList.add("hidden");
+
+      // Show relevant fields based on sale type
+      if (saleType === "typical") {
+        document.getElementById("commonFields").classList.remove("hidden");
+        document.getElementById("salePrice").classList.remove("hidden");
+      } else if (saleType === "financed") {
+        document.getElementById("commonFields").classList.remove("hidden");
+        document.getElementById("salePrice").classList.remove("hidden");
+        document.getElementById("financedFields").classList.remove("hidden");
+      } else if (saleType === "auction") {
+        document.getElementById("auctionFields").classList.remove("hidden");
+      }
+    }
+
     function calculate() {
-      const typeOfSale = document.getElementById("typeOfSale").value;
-      const commissionFee = parseFloat(document.getElementById("commissionFee").value) / 100;
-      const salePrice = parseFloat(document.getElementById("salePrice").value);
-      const timeTaken = parseFloat(document.getElementById("timeTaken").value);
-      const interestRate = parseFloat(document.getElementById("interestRate").value) / 100;
+      const saleType = document.getElementById("saleType").value;
+      const commissionRate = parseFloat(document.getElementById("commissionRate").value) / 100;
+      const VAT_RATE = 0.2; // 20% VAT in the UK
 
-      let upfrontPayment = salePrice * 0.5 - (salePrice * 0.5 * commissionFee);
-      let financeCost = salePrice * 0.5 * interestRate * (timeTaken / 12);
-      let netReturn, commissionEarned;
+      let salePrice = parseFloat(document.getElementById("salePrice")?.value) || 0;
+      let agreedValue = parseFloat(document.getElementById("agreedValue")?.value) || 0;
+      let hammerPrice = parseFloat(document.getElementById("hammerPrice")?.value) || 0;
+      let timeToSell = parseFloat(document.getElementById("timeToSell")?.value) || 0;
+      let financeRate = parseFloat(document.getElementById("financeRate")?.value) / 100 || 0;
 
-      if (typeOfSale === "typical") {
-        commissionEarned = salePrice * commissionFee;
+      let upfrontPayment = 0;
+      let financeCost = 0;
+      let netReturn = 0;
+      let commissionEarned = 0;
+
+      if (saleType === "typical") {
+        commissionEarned = salePrice * commissionRate * (1 + VAT_RATE); // Commission including VAT
         netReturn = salePrice - commissionEarned;
-      } else if (typeOfSale === "loan") {
-        commissionEarned = salePrice * commissionFee;
+      } else if (saleType === "financed") {
+        upfrontPayment = agreedValue * 0.5 - (agreedValue * 0.5 * commissionRate * (1 + VAT_RATE));
+        financeCost = agreedValue * 0.5 * financeRate * (timeToSell / 12);
+        commissionEarned = salePrice * commissionRate * (1 + VAT_RATE); // Commission including VAT
         netReturn = upfrontPayment + (salePrice - financeCost - commissionEarned);
-      } else if (typeOfSale === "auction") {
-        commissionEarned = salePrice * commissionFee;
-        netReturn = salePrice - financeCost - commissionEarned;
+      } else if (saleType === "auction") {
+        commissionEarned = hammerPrice * commissionRate * (1 + VAT_RATE); // Commission including VAT
+        netReturn = hammerPrice - commissionEarned;
       }
 
       document.getElementById("output").innerHTML = `
-        <p>Type of Sale: ${typeOfSale.charAt(0).toUpperCase() + typeOfSale.slice(1)}</p>
-        <p>Upfront Payment: £${upfrontPayment.toFixed(2)}</p>
-        <p>Finance Cost: £${financeCost.toFixed(2)}</p>
-        <p>Commission Earned by Hangar 136: £${commissionEarned.toFixed(2)}</p>
+        <p>Sale Type: ${saleType.charAt(0).toUpperCase() + saleType.slice(1)}</p>
+        ${upfrontPayment > 0 ? `<p>Upfront Payment: £${upfrontPayment.toFixed(2)}</p>` : ""}
+        ${financeCost > 0 ? `<p>Finance Cost: £${financeCost.toFixed(2)}</p>` : ""}
+        <p>Commission Earned by Hangar 136 (Including VAT): £${commissionEarned.toFixed(2)}</p>
         <p>Net Return to the Seller: £${netReturn.toFixed(2)}</p>
       `;
     }
