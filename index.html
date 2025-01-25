@@ -22,6 +22,10 @@
       border: 1px solid #ddd;
       background: #f9f9f9;
     }
+    .red-text {
+      color: red;
+      font-weight: bold;
+    }
     .accounting {
       font-family: monospace;
       white-space: pre-line;
@@ -33,22 +37,12 @@
   <form id="calculator">
     <label for="saleType">Sale Type</label>
     <select id="saleType" onchange="updateFormFields()">
-      <option value="typical">Typical Consignment</option>
       <option value="financed">Financed Consignment</option>
       <option value="auction">Auction</option>
     </select>
 
-    <!-- Fields for Typical Consignment -->
-    <div id="typicalFields" class="hidden">
-      <label for="salePrice">Sale Price (£)</label>
-      <input type="number" id="salePrice" placeholder="Enter sale price">
-
-      <label for="commissionRate">Commission % (Excluding VAT)</label>
-      <input type="number" id="commissionRate" placeholder="Enter commission percentage">
-    </div>
-
     <!-- Fields for Financed Consignment -->
-    <div id="financedFields" class="hidden">
+    <div id="financedFields">
       <label for="agreedValue">Agreed Market Value (£)</label>
       <input type="number" id="agreedValue" placeholder="Enter agreed market value">
 
@@ -81,19 +75,15 @@
       const saleType = document.getElementById("saleType").value;
 
       // Get all field sections
-      const typicalFields = document.getElementById("typicalFields");
       const financedFields = document.getElementById("financedFields");
       const auctionFields = document.getElementById("auctionFields");
 
       // Reset visibility
-      typicalFields.classList.add("hidden");
       financedFields.classList.add("hidden");
       auctionFields.classList.add("hidden");
 
       // Show relevant fields
-      if (saleType === "typical") {
-        typicalFields.classList.remove("hidden");
-      } else if (saleType === "financed") {
+      if (saleType === "financed") {
         financedFields.classList.remove("hidden");
       } else if (saleType === "auction") {
         auctionFields.classList.remove("hidden");
@@ -134,6 +124,9 @@
         const secondPayment = salePrice - remainingCommission - loanAmount - financeCost;
         const fullNetReturn = upfrontPayment + secondPayment;
 
+        // Calculate typical consignment net return
+        const typicalNetReturn = salePrice - finalCommission;
+
         // Output the results (reformatted)
         outputText = `
           <p><strong>Sale Type:</strong> Financed Consignment</p>
@@ -151,7 +144,8 @@
           <p><strong>Remaining H136 Commission Owed:</strong> £${remainingCommission.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
           <p><strong>Seller Second Payment Amount:</strong> £${secondPayment.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
           <hr>
-          <p><strong>TOTAL NET RETURN (to Seller):</strong> £${fullNetReturn.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+          <p><strong>TOTAL NET RETURN (Financed Consignment):</strong> £${fullNetReturn.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+          <p class="red-text">NET RETURN (if sold by regular consignment): £${typicalNetReturn.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
         `;
       }
 
