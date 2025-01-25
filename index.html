@@ -36,8 +36,8 @@
 
     <!-- Fields for all scenarios -->
     <div id="commonFields">
-      <label for="salePrice" class="hidden">Sale Price (£)</label>
-      <input type="number" id="salePrice" class="hidden" placeholder="Enter sale price">
+      <label for="salePrice">Sale Price (£)</label>
+      <input type="number" id="salePrice" placeholder="Enter sale price">
     </div>
 
     <!-- Fields for Financed Consignment -->
@@ -72,17 +72,14 @@
       const saleType = document.getElementById("saleType").value;
 
       // Hide all fields initially
-      document.getElementById("commonFields").classList.add("hidden");
       document.getElementById("salePrice").classList.add("hidden");
       document.getElementById("financedFields").classList.add("hidden");
       document.getElementById("auctionFields").classList.add("hidden");
 
       // Show relevant fields based on sale type
       if (saleType === "typical") {
-        document.getElementById("commonFields").classList.remove("hidden");
         document.getElementById("salePrice").classList.remove("hidden");
       } else if (saleType === "financed") {
-        document.getElementById("commonFields").classList.remove("hidden");
         document.getElementById("salePrice").classList.remove("hidden");
         document.getElementById("financedFields").classList.remove("hidden");
       } else if (saleType === "auction") {
