@@ -106,19 +106,7 @@
 
       let outputText = "";
 
-      if (saleType === "typical") {
-        const salePrice = parseFloat(document.getElementById("salePrice").value) || 0;
-        const commissionRate = parseFloat(document.getElementById("commissionRate").value) / 100 || 0;
-        const totalCommission = salePrice * commissionRate * (1 + VAT_RATE); // Including VAT
-        const netReturn = salePrice - totalCommission;
-
-        outputText = `
-          <p>Sale Type: Typical Consignment</p>
-          <p>Sale Price: £${salePrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
-          <p>Hangar 136 Commission: £${totalCommission.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
-          <p>Net Return to the Seller: £${netReturn.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
-        `;
-      } else if (saleType === "financed") {
+      if (saleType === "financed") {
         const agreedValue = parseFloat(document.getElementById("agreedValue").value) || 0;
         const salePrice = parseFloat(document.getElementById("salePriceFinanced").value) || 0;
         const commissionRate = parseFloat(document.getElementById("commissionRateFinanced").value) / 100 || 0;
@@ -126,21 +114,23 @@
         const financeRate = parseFloat(document.getElementById("financeRate").value) / 100 || 0;
 
         const totalCommission = salePrice * commissionRate * (1 + VAT_RATE); // Including VAT
-        const upfrontPayment = (agreedValue * 0.5) - (totalCommission * 0.5);
+        const upfrontCommission = totalCommission * 0.5; // Half withheld upfront
+        const remainingCommission = totalCommission - upfrontCommission; // Remaining owed commission
+        const upfrontPayment = (agreedValue * 0.5) - upfrontCommission;
         const loanAmount = agreedValue * 0.5;
         const financeCost = loanAmount * financeRate * (timeToSell / 12);
-        const secondPayment = salePrice - totalCommission - loanAmount - financeCost;
+        const secondPayment = salePrice - remainingCommission - loanAmount - financeCost;
         const fullNetReturn = upfrontPayment + secondPayment;
 
         outputText = `
           <p>Sale Type: Financed Consignment</p>
           <p>At an Agreed Market Value of £${agreedValue.toLocaleString(undefined, { minimumFractionDigits: 2 })} and a Commission Fee of ${(commissionRate * 100).toFixed(1)}%+VAT, Hangar 136's projected total commission will be £${totalCommission.toLocaleString(undefined, { minimumFractionDigits: 2 })}.</p>
-          <p>The Seller's upfront payment will equal 50% of the Agreed Market Value less half of the projected total commission owed to Hangar 136. In this case, the Seller will receive £${(agreedValue * 0.5).toLocaleString(undefined, { minimumFractionDigits: 2 })} - £${(totalCommission * 0.5).toLocaleString(undefined, { minimumFractionDigits: 2 })} = £${upfrontPayment.toLocaleString(undefined, { minimumFractionDigits: 2 })} Upfront.</p>
+          <p>The Seller's upfront payment will equal 50% of the Agreed Market Value less half of the projected total commission owed to Hangar 136. In this case, the Seller will receive £${(agreedValue * 0.5).toLocaleString(undefined, { minimumFractionDigits: 2 })} - £${upfrontCommission.toLocaleString(undefined, { minimumFractionDigits: 2 })} = £${upfrontPayment.toLocaleString(undefined, { minimumFractionDigits: 2 })} Upfront.</p>
           <p>If the car were to take ${timeToSell} months to sell, the cost of the finance would be £${financeCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}.</p>
           <p>Accounting Breakdown:</p>
           <div class="accounting">
             Sale Price: £${salePrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-            - Hangar 136 Commission: £${totalCommission.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            - Remaining Hangar 136 Commission: £${remainingCommission.toLocaleString(undefined, { minimumFractionDigits: 2 })}
             - Initial Loan Amount: £${loanAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
             - Cost of Finance: £${financeCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
             ------------------------------------
